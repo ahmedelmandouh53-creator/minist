@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MNIST Digit Recognizer</title>
+<style>
+  :root { --bg:#f3f5f9; --card:#fff; --ink:#1f2937; --muted:#6b7280; --accent:#2563eb; --line:#e5e7eb; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:24px 16px; background:var(--bg); color:var(--ink);
+         font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width:880px; margin:0 auto; }
+  h1 { margin:0 0 4px; font-size:1.6rem; }
+  .sub { color:var(--muted); margin:0 0 20px; }
+  .layout { display:grid; grid-template-columns: minmax(0,320px) minmax(0,1fr); gap:20px; align-items:start; }
+  @media (max-width:700px) { .layout { grid-template-columns:1fr; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+  canvas { display:block; width:100%; aspect-ratio:1; background:#000; border-radius:10px; cursor:crosshair; touch-action:none; }
+  label { display:block; font-weight:600; margin:0 0 6px; }
+  select, button { font:inherit; border-radius:10px; border:1px solid var(--line); padding:10px 12px; }
+  select { width:100%; background:#fff; }
+  .row { display:flex; gap:10px; margin-top:12px; }
+  button { flex:1; cursor:pointer; background:#fff; font-weight:600; }
+  button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+  button:hover { filter:brightness(.96); }
+  .result { text-align:center; }
+  .digit { font-size:7rem; line-height:1.1; font-weight:700; color:var(--accent); min-height:1.1em; }
+  .digit.placeholder { color:#cbd5e1; }
+  .used { color:var(--muted); min-height:1.5em; }
+  .error { color:#b91c1c; font-weight:600; min-height:1.5em; }
+  .bars { margin-top:12px; text-align:left; }
+  .bar { display:grid; grid-template-columns:18px 1fr 52px; gap:8px; align-items:center; font-size:.85rem; margin:3px 0; }
+  .bar .track { background:#eef2ff; border-radius:6px; height:10px; overflow:hidden; }
+  .bar .fill { background:#93a4f4; height:100%; width:0; transition:width .25s; }
+  .bar.top .fill { background:var(--accent); }
+  .bar span:last-child { text-align:right; color:var(--muted); }
+  .hint { color:var(--muted); font-size:.85rem; margin-top:10px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>MNIST Digit Recognizer</h1>
+  <p class="sub">Draw a digit (0-9) with the mouse or your finger, choose a model, then press Predict.</p>
+  <div class="layout">
+    <section class="card">
+      <canvas id="canvas" width="280" height="280"></canvas>
+      <div class="row">
+        <button id="clear">Clear</button>
+        <button id="predict" class="primary">Predict</button>
+      </div>
+      <p class="hint">Tip: draw one large, thick digit.</p>
+    </section>
+    <section class="card result">
+      <label for="model">Model</label>
+      <select id="model">
+        {% for key, label in models.items() %}<option value="{{ key }}">{{ label }}</option>{% endfor %}
+      </select>
+      <div id="digit" class="digit placeholder">?</div>
+      <div id="used" class="used">Prediction will appear here.</div>
+      <div id="error" class="error"></div>
+      <div id="bars" class="bars"></div>
+    </section>
+  </div>
+</main>
+<script>
+const canvas = document.getElementById("canvas"), ctx = canvas.getContext("2d");
+const digitEl = document.getElementById("digit"), usedEl = document.getElementById("used"),
+      errorEl = document.getElementById("error"), barsEl = document.getElementById("bars"),
+      modelEl = document.getElementById("model");
+let drawing = false, hasInk = false;
+
+function resetCanvas() {                       // black background, white pen (same polarity as MNIST)
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = "#fff"; ctx.lineWidth = 20; ctx.lineCap = "round"; ctx.lineJoin = "round";
+  hasInk = false;
+}
+function resetResult() {
+  digitEl.textContent = "?"; digitEl.classList.add("placeholder");
+  usedEl.textContent = "Prediction will appear here."; errorEl.textContent = ""; barsEl.innerHTML = "";
+}
+function pos(e) {
+  const r = canvas.getBoundingClientRect();
+  return [(e.clientX - r.left) * canvas.width / r.width, (e.clientY - r.top) * canvas.height / r.height];
+}
+canvas.addEventListener("pointerdown", e => {
+  drawing = true; canvas.setPointerCapture(e.pointerId);
+  const [x, y] = pos(e); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 0.01, y); ctx.stroke(); hasInk = true;
+});
+canvas.addEventListener("pointermove", e => { if (!drawing) return; const [x, y] = pos(e); ctx.lineTo(x, y); ctx.stroke(); });
+["pointerup", "pointercancel"].forEach(t => canvas.addEventListener(t, () => { drawing = false; }));
+
+document.getElementById("clear").onclick = () => { resetCanvas(); resetResult(); };
+
+async function predict() {
+  errorEl.textContent = "";
+  if (!hasInk) { errorEl.textContent = "The canvas is empty - draw a digit first."; return; }
+  usedEl.textContent = "Predicting...";
+  try {
+    const res = await fetch("/api/predict", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: modelEl.value, image: canvas.toDataURL("image/png") }) });
+    const data = await res.json();
+    if (!res.ok) { errorEl.textContent = data.error; usedEl.textContent = ""; return; }
+    digitEl.textContent = data.digit; digitEl.classList.remove("placeholder");
+    usedEl.textContent = "Model: " + data.model_label;
+    const max = Math.max(...data.probabilities);
+    barsEl.innerHTML = data.probabilities.map((p, i) =>
+      `<div class="bar ${p === max ? "top" : ""}"><span>${i}</span><div class="track"><div class="fill" style="width:${(p * 100).toFixed(1)}%"></div></div><span>${(p * 100).toFixed(1)}%</span></div>`).join("");
+  } catch (err) { errorEl.textContent = "Request failed: " + err; usedEl.textContent = ""; }
+}
+document.getElementById("predict").onclick = predict;
+modelEl.onchange = () => { if (hasInk) predict(); };   // switching model re-runs the prediction on the same drawing
+resetCanvas();
+</script>
+</body>
+</html>
