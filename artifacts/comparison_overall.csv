@@ -1,0 +1,4 @@
+Model,Hardware,Test accuracy (%),Validation accuracy (%),Train-subset accuracy (%),Macro precision (%),Macro recall (%),Macro F1 (%),"Test errors (of 10,000)",Training time (s),Inference (ms / image),Stored values / parameters,File size (MB),Best epoch
+SVM,CPU,98.51,98.42,99.99,98.51,98.5,98.5,149,151.3,6.6932,9763152,5.83,-
+MLP,GPU,98.13,98.37,99.84,98.13,98.11,98.12,187,42.5,0.0006,235146,0.94,26
+CNN,GPU,99.07,98.92,99.77,99.06,99.06,99.06,93,15.6,0.0039,220234,0.89,13

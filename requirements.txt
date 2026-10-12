@@ -1,5 +1,7 @@
-# Tested with Python 3.11 on Windows 11 (CPU only)
-# PyTorch CPU wheels: pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+# Tested with Python 3.11 on Windows 11. The code uses an NVIDIA GPU when available and falls back to the CPU.
+# NVIDIA GPU (CUDA 13.0, needed for RTX 50xx): pip install torch==2.14.1 torchvision==0.29.1 --index-url https://download.pytorch.org/whl/cu130
+# CPU only:                                  pip install torch==2.14.1 torchvision==0.29.1 --index-url https://download.pytorch.org/whl/cpu
+# then:                                      pip install -r requirements.txt
 torch==2.14.1
 torchvision==0.29.1
 numpy==2.4.6

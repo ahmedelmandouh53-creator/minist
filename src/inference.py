@@ -12,7 +12,7 @@ import torch
 from PIL import Image
 
 from data_preprocessing import IMG_SIZE, PIXEL_MAX, add_channel, flatten
-from model_utils import MLP, SimpleCNN
+from model_utils import DEVICE, MLP, SimpleCNN
 
 MODELS_DIR = Path(__file__).resolve().parent.parent / "models"
 MODEL_FILES = {
@@ -75,7 +75,7 @@ def _load_torch_model(path):
     cls = {"mlp": MLP, "cnn": SimpleCNN}[ckpt["arch"]]
     model = cls(**ckpt["config"])
     model.load_state_dict(ckpt["state_dict"])
-    return model.eval()
+    return model.to(DEVICE).eval()
 
 
 class DigitRecognizer:
@@ -98,6 +98,6 @@ class DigitRecognizer:
             probs = e / e.sum()
         else:
             with torch.no_grad():
-                inp = torch.from_numpy(flatten(x) if key == "mlp" else add_channel(x))
-                probs = torch.softmax(self.models[key](inp), dim=1)[0].numpy()
+                inp = torch.from_numpy(flatten(x) if key == "mlp" else add_channel(x)).to(DEVICE)
+                probs = torch.softmax(self.models[key](inp), dim=1)[0].cpu().numpy()
         return int(np.argmax(probs)), probs

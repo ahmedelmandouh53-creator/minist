@@ -1,0 +1,16 @@
+Model,True digit,Predicted as,Count
+SVM,7,9,10
+SVM,7,2,8
+SVM,9,4,7
+SVM,4,9,7
+SVM,2,7,7
+MLP,7,2,9
+MLP,9,4,9
+MLP,5,3,9
+MLP,4,9,9
+MLP,8,3,7
+CNN,6,5,7
+CNN,6,0,7
+CNN,7,2,6
+CNN,9,4,6
+CNN,9,7,5

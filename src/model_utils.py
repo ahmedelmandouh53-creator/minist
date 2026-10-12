@@ -12,7 +12,7 @@ from sklearn.metrics import accuracy_score
 
 from data_preprocessing import IMG_SIZE, N_CLASSES
 
-DEVICE = torch.device("cpu")
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def set_seed(seed):
@@ -64,7 +64,7 @@ def count_parameters(model):
 
 # --------------------------------------------------------------------------- training
 def _batches(x, y, batch_size, shuffle):
-    idx = torch.randperm(len(x)) if shuffle else torch.arange(len(x))
+    idx = torch.randperm(len(x), device=x.device) if shuffle else torch.arange(len(x), device=x.device)
     for i in range(0, len(x), batch_size):
         b = idx[i:i + batch_size]
         yield x[b], y[b]
@@ -73,8 +73,9 @@ def _batches(x, y, batch_size, shuffle):
 @torch.no_grad()
 def predict_proba(model, x, batch_size=2048):
     model.eval()
-    out = [torch.softmax(model(xb), dim=1) for xb, _ in _batches(x, torch.zeros(len(x)), batch_size, False)]
-    return torch.cat(out).numpy()
+    x = x.to(DEVICE)
+    out = [torch.softmax(model(xb), dim=1) for xb, _ in _batches(x, torch.zeros(len(x), device=DEVICE), batch_size, False)]
+    return torch.cat(out).cpu().numpy()
 
 
 def train_torch(model, x_train, y_train, x_val, y_val, *, lr, batch_size, epochs,
@@ -86,8 +87,9 @@ def train_torch(model, x_train, y_train, x_val, y_val, *, lr, batch_size, epochs
     restored at the end (a form of early stopping; history["best_epoch"] is 1-based).
     """
     set_seed(seed)
-    xt, yt = torch.from_numpy(x_train), torch.from_numpy(y_train).long()
-    xv = torch.from_numpy(x_val)
+    # MNIST is small enough to keep entirely on the device, avoiding per-batch host->GPU copies
+    xt, yt = torch.from_numpy(x_train).to(DEVICE), torch.from_numpy(y_train).long().to(DEVICE)
+    xv = torch.from_numpy(x_val).to(DEVICE)
     model = model.to(DEVICE)
     if optimizer == "adam":
         opt = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)

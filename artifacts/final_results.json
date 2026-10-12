@@ -1,0 +1,74 @@
+{
+  "SVM": {
+    "train_acc": 0.9999,
+    "val_acc": 0.9841666666666666,
+    "test_acc": 0.9851,
+    "macro_precision": 0.9850804219131577,
+    "macro_recall": 0.9849861104006253,
+    "macro_f1": 0.9850280644517143,
+    "train_time_s": 151.31733569999778,
+    "inference_ms_per_image": 6.693210139999792,
+    "complexity": 9763152,
+    "test_errors": 149,
+    "complexity_note": "values stored in support vectors",
+    "file_mb": 5.827882,
+    "best_epoch": null
+  },
+  "MLP": {
+    "train_acc": 0.9984,
+    "val_acc": 0.9836666666666667,
+    "test_acc": 0.9813,
+    "macro_precision": 0.9813101984063113,
+    "macro_recall": 0.9810927884987517,
+    "macro_f1": 0.9811833428826373,
+    "train_time_s": 42.4948321999982,
+    "inference_ms_per_image": 0.0006345199999486795,
+    "complexity": 235146,
+    "test_errors": 187,
+    "best_epoch": 26,
+    "train_time_to_best_epoch_s": 36.828854573331775,
+    "file_mb": 0.943917
+  },
+  "CNN": {
+    "train_acc": 0.9977,
+    "val_acc": 0.9891666666666666,
+    "test_acc": 0.9907,
+    "macro_precision": 0.9906461023239336,
+    "macro_recall": 0.9905930975260541,
+    "macro_f1": 0.9906048447347657,
+    "train_time_s": 15.607534700000542,
+    "inference_ms_per_image": 0.003864590000011958,
+    "complexity": 220234,
+    "test_errors": 93,
+    "best_epoch": 13,
+    "train_time_to_best_epoch_s": 13.526530073333804,
+    "file_mb": 0.885033
+  },
+  "hyperparameters": {
+    "SVM": {
+      "kernel": "rbf",
+      "C": 5.0,
+      "gamma": 0.02
+    },
+    "MLP": {
+      "hidden": [
+        256,
+        128
+      ],
+      "lr": 0.001,
+      "dropout": 0.3,
+      "batch": 64,
+      "wd": 0.0
+    },
+    "CNN": {
+      "filters": [
+        32,
+        64
+      ],
+      "lr": 0.003,
+      "dropout": 0.0,
+      "batch": 128,
+      "wd": 0.0001
+    }
+  }
+}
