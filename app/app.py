@@ -22,7 +22,7 @@ def index():
 
 
 CHART_TITLES = {
-    "comparison.png": "Accuracy, training time, speed and size",
+    "comparison.png": "Accuracy, training time and parameters",
     "cmp_performance.png": "Performance",
     "cmp_cost.png": "Cost: time, speed and size",
     "cmp_tradeoff.png": "Accuracy vs cost",
@@ -40,11 +40,9 @@ def count_text(n):
 # column in model_comparison.csv -> (table heading, how to print it, which value is best)
 TABLE_COLUMNS = [
     ("test acc", "Test accuracy", lambda v: f"{v:.2%}", max),
-    ("test errors", "Errors", lambda v: f"{v:.0f}", min),
+    ("gap (train - test)", "Train-test gap", lambda v: f"{v:.2%}", min),
     ("train time (s)", "Training time", lambda v: f"{v:.1f} s", min),
-    ("inference (ms/img)", "Prediction time", lambda v: f"{v:.3g} ms/img", min),
     ("parameters", "Parameters", count_text, min),
-    ("file size (MB)", "File size", lambda v: f"{v:.2f} MB", min),
 ]
 
 
