@@ -8,10 +8,10 @@ from pathlib import Path
 from flask import Flask, jsonify, render_template, request
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
-from inference import MODEL_LABELS, DigitRecognizer, canvas_to_mnist, data_url_to_image  # noqa: E402
+from inference import MODEL_LABELS, DigitRecognizer, canvas_to_mnist, data_url_to_image
 
 app = Flask(__name__)
-recognizer = DigitRecognizer()          # loads all three saved models once, at start-up
+recognizer = DigitRecognizer()
 print("Loaded models:", ", ".join(recognizer.models))
 
 
@@ -28,7 +28,7 @@ def predict():
         return jsonify(error=f"Unknown model '{key}'."), 400
     try:
         image28 = canvas_to_mnist(data_url_to_image(body["image"]))
-    except Exception as exc:            # malformed image data
+    except Exception as exc:
         return jsonify(error=f"Could not read the drawing: {exc}"), 400
     if image28 is None:
         return jsonify(error="The canvas is empty - draw a digit first."), 400

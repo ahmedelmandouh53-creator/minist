@@ -12,7 +12,7 @@ from sklearn.metrics import accuracy_score
 
 from data_preprocessing import IMG_SIZE, N_CLASSES
 
-DEVICE = torch.device("cpu")
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def set_seed(seed):
@@ -20,7 +20,6 @@ def set_seed(seed):
     torch.manual_seed(seed)
 
 
-# --------------------------------------------------------------------------- MLP
 class MLP(nn.Module):
     """Fully connected layers only: 784 -> hidden... -> 10."""
 
@@ -30,14 +29,13 @@ class MLP(nn.Module):
         for h in hidden_sizes:
             layers += [nn.Linear(in_features, h), nn.ReLU(), nn.Dropout(dropout)]
             in_features = h
-        layers.append(nn.Linear(in_features, N_CLASSES))  # logits
+        layers.append(nn.Linear(in_features, N_CLASSES))
         self.net = nn.Sequential(*layers)
 
     def forward(self, x):
         return self.net(x)
 
 
-# --------------------------------------------------------------------------- CNN
 class SimpleCNN(nn.Module):
     """Introductory CNN: [Conv-ReLU-MaxPool] x2 -> Flatten -> FC -> Dropout -> FC."""
 
@@ -45,13 +43,13 @@ class SimpleCNN(nn.Module):
         super().__init__()
         f1, f2 = filters
         self.features = nn.Sequential(
-            nn.Conv2d(1, f1, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(2),   # 28 -> 14
-            nn.Conv2d(f1, f2, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(2),  # 14 -> 7
+            nn.Conv2d(1, f1, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(2),
+            nn.Conv2d(f1, f2, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(2),
         )
         self.classifier = nn.Sequential(
             nn.Flatten(),
             nn.Linear(f2 * 7 * 7, fc_units), nn.ReLU(), nn.Dropout(dropout),
-            nn.Linear(fc_units, N_CLASSES),  # logits
+            nn.Linear(fc_units, N_CLASSES),
         )
 
     def forward(self, x):
@@ -62,9 +60,8 @@ def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
-# --------------------------------------------------------------------------- training
 def _batches(x, y, batch_size, shuffle):
-    idx = torch.randperm(len(x)) if shuffle else torch.arange(len(x))
+    idx = torch.randperm(len(x), device=x.device) if shuffle else torch.arange(len(x), device=x.device)
     for i in range(0, len(x), batch_size):
         b = idx[i:i + batch_size]
         yield x[b], y[b]
@@ -72,8 +69,11 @@ def _batches(x, y, batch_size, shuffle):
 
 @torch.no_grad()
 def predict_proba(model, x, batch_size=2048):
+    """Softmax probabilities as a numpy array; works for models on CPU or GPU and for CPU or GPU inputs."""
     model.eval()
-    out = [torch.softmax(model(xb), dim=1) for xb, _ in _batches(x, torch.zeros(len(x)), batch_size, False)]
+    device = next(model.parameters()).device
+    x = torch.as_tensor(x)
+    out = [torch.softmax(model(x[i:i + batch_size].to(device)), dim=1).cpu() for i in range(0, len(x), batch_size)]
     return torch.cat(out).numpy()
 
 
@@ -86,8 +86,8 @@ def train_torch(model, x_train, y_train, x_val, y_val, *, lr, batch_size, epochs
     restored at the end (a form of early stopping; history["best_epoch"] is 1-based).
     """
     set_seed(seed)
-    xt, yt = torch.from_numpy(x_train), torch.from_numpy(y_train).long()
-    xv = torch.from_numpy(x_val)
+    xt, yt = torch.from_numpy(x_train).to(DEVICE), torch.from_numpy(y_train).long().to(DEVICE)
+    xv = torch.from_numpy(x_val).to(DEVICE)
     model = model.to(DEVICE)
     if optimizer == "adam":
         opt = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
@@ -98,23 +98,25 @@ def train_torch(model, x_train, y_train, x_val, y_val, *, lr, batch_size, epochs
     start = time.perf_counter()
     for epoch in range(epochs):
         model.train()
-        total_loss, correct = 0.0, 0
+        total_loss, correct = torch.zeros((), device=DEVICE), torch.zeros((), device=DEVICE)
         for xb, yb in _batches(xt, yt, batch_size, True):
             opt.zero_grad()
             logits = model(xb)
             loss = loss_fn(logits, yb)
             loss.backward()
             opt.step()
-            total_loss += loss.item() * len(xb)
-            correct += (logits.argmax(1) == yb).sum().item()
-        hist["train_loss"].append(total_loss / len(xt))
-        hist["train_acc"].append(correct / len(xt))
+            total_loss += loss.detach() * len(xb)
+            correct += (logits.argmax(1) == yb).sum()
+        hist["train_loss"].append(total_loss.item() / len(xt))
+        hist["train_acc"].append(correct.item() / len(xt))
         hist["val_acc"].append(accuracy_score(y_val, predict_proba(model, xv).argmax(1)))
         if restore_best and hist["val_acc"][-1] >= max(hist["val_acc"]):
             best_state = {k: v.clone() for k, v in model.state_dict().items()}
         if verbose:
             print(f"epoch {epoch + 1:2d}  loss {hist['train_loss'][-1]:.4f}  "
                   f"train acc {hist['train_acc'][-1]:.4f}  val acc {hist['val_acc'][-1]:.4f}")
+    if DEVICE.type == "cuda":
+        torch.cuda.synchronize()
     hist["train_time_s"] = time.perf_counter() - start
     hist["best_epoch"] = int(np.argmax(hist["val_acc"])) + 1
     if restore_best:

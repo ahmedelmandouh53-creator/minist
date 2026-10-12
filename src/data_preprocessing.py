@@ -25,7 +25,7 @@ def load_raw_mnist(data_dir=DATA_DIR):
 
     Returns x_train (60000,28,28), y_train (60000,), x_test (10000,28,28), y_test (10000,).
     """
-    from torchvision import datasets  # imported here so the app does not need torchvision
+    from torchvision import datasets
 
     train = datasets.MNIST(str(data_dir), train=True, download=True)
     test = datasets.MNIST(str(data_dir), train=False, download=True)

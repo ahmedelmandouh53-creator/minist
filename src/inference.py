@@ -26,8 +26,8 @@ MODEL_LABELS = {
     "cnn": "Deep learning - CNN",
 }
 
-DIGIT_BOX = 20          # MNIST digits are size-normalised to fit a 20x20 box ...
-INK_THRESHOLD = 10      # pixel values <= this are treated as empty background
+DIGIT_BOX = 20
+INK_THRESHOLD = 10
 
 
 def canvas_to_mnist(img):
@@ -52,7 +52,6 @@ def canvas_to_mnist(img):
     top, left = (IMG_SIZE - dh) // 2, (IMG_SIZE - dw) // 2
     canvas[top:top + dh, left:left + dw] = np.asarray(digit, dtype=np.float32)
 
-    # shift so the centre of mass is the image centre (as in the original MNIST preparation)
     total = canvas.sum()
     cy, cx = (np.arange(IMG_SIZE) @ canvas.sum(1)) / total, (np.arange(IMG_SIZE) @ canvas.sum(0)) / total
     shift_y, shift_x = int(round(IMG_SIZE / 2 - 0.5 - cy)), int(round(IMG_SIZE / 2 - 0.5 - cx))
@@ -90,9 +89,8 @@ class DigitRecognizer:
 
     def predict(self, key, image28):
         """Return (digit, probabilities[10]) from the model named `key`."""
-        x = image28[None].astype(np.float32)                       # (1,28,28)
+        x = image28[None].astype(np.float32)
         if key == "svm":
-            # SVC was trained with probability=False; softmax of decision scores gives a confidence
             scores = self.models["svm"].decision_function(flatten(x))[0]
             e = np.exp(scores - scores.max())
             probs = e / e.sum()

@@ -69,7 +69,7 @@ const digitEl = document.getElementById("digit"), usedEl = document.getElementBy
       modelEl = document.getElementById("model");
 let drawing = false, hasInk = false;
 
-function resetCanvas() {                       // black background, white pen (same polarity as MNIST)
+function resetCanvas() {                    
   ctx.fillStyle = "#000"; ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.strokeStyle = "#fff"; ctx.lineWidth = 20; ctx.lineCap = "round"; ctx.lineJoin = "round";
   hasInk = false;
@@ -108,7 +108,7 @@ async function predict() {
   } catch (err) { errorEl.textContent = "Request failed: " + err; usedEl.textContent = ""; }
 }
 document.getElementById("predict").onclick = predict;
-modelEl.onchange = () => { if (hasInk) predict(); };   // switching model re-runs the prediction on the same drawing
+modelEl.onchange = () => { if (hasInk) predict(); };
 resetCanvas();
 </script>
 </body>
