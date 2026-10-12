@@ -1,0 +1,19 @@
+{
+  "model": "SVM",
+  "train_acc": 0.9999,
+  "val_acc": 0.9841666666666666,
+  "test_acc": 0.9851,
+  "macro_precision": 0.9850804219131577,
+  "macro_recall": 0.9849861104006253,
+  "macro_f1": 0.9850280644517143,
+  "test_errors": 149,
+  "train_time_s": 200.86922208301257,
+  "inference_ms_per_img": 4.232109667005716,
+  "parameters": 9763152,
+  "file_size_mb": 5.828041,
+  "hyperparameters": {
+    "kernel": "rbf",
+    "C": 5.0,
+    "gamma": 0.02
+  }
+}

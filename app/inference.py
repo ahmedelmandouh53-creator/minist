@@ -11,10 +11,10 @@ import numpy as np
 import torch
 from PIL import Image
 
-from data_preprocessing import IMG_SIZE, PIXEL_MAX, add_channel, flatten
+from image_utils import IMG_SIZE, PIXEL_MAX, add_channel, flatten
 from model_utils import MLP, SimpleCNN
 
-MODELS_DIR = Path(__file__).resolve().parent.parent / "models"
+MODELS_DIR = Path(__file__).resolve().parent / "models"
 MODEL_FILES = {
     "svm": MODELS_DIR / "classical_svm.joblib",
     "mlp": MODELS_DIR / "mlp_model.pt",

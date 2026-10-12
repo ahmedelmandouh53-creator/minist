@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Model Comparison</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Model comparison</h1>
+      <p class="sub">SVM vs MLP vs CNN, evaluated on the 10,000 MNIST test images.</p>
+    </div>
+    <a class="nav-link" href="/">&larr; Digit recognizer</a>
+  </header>
+
+  {% if table %}
+  <section class="card">
+    <p class="label">Summary</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Model</th>{% for h in table.headers %}<th>{{ h }}</th>{% endfor %}</tr>
+        </thead>
+        <tbody>
+          {% for name, cells in table.rows %}
+          <tr><td>{{ name }}</td>{% for text, best in cells %}<td{% if best %} class="best"{% endif %}>{{ text }}</td>{% endfor %}</tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note">Highlighted = best in each column. For the SVM, "parameters" counts the values stored in its support vectors.</p>
+  </section>
+  {% endif %}
+
+  {% if latest %}
+  <h2 class="section-title">Charts</h2>
+  {% for file, title in latest %}
+  <section class="card chart-card">
+    <h3>{{ title }}</h3>
+    <a href="/charts/{{ file }}" target="_blank"><img src="/charts/{{ file }}" alt="{{ title }}"></a>
+  </section>
+  {% endfor %}
+  {% endif %}
+
+  {% if earlier %}
+  <h2 class="section-title">Earlier training run</h2>
+  <p class="section-note">These charts come from an earlier run of the models, so their numbers differ slightly from the table above.</p>
+  {% for file, title in earlier %}
+  <section class="card chart-card">
+    <h3>{{ title }}</h3>
+    <a href="/charts/{{ file }}" target="_blank"><img src="/charts/{{ file }}" alt="{{ title }}"></a>
+  </section>
+  {% endfor %}
+  {% endif %}
+
+  {% if not table and not latest and not earlier %}
+  <p class="sub">Nothing to show yet: run notebook 04 to create the comparison results in app/charts.</p>
+  {% endif %}
+</main>
+</body>
+</html>

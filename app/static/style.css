@@ -1,0 +1,106 @@
+/* Shared dark theme for both pages. */
+:root {
+  color-scheme: dark;
+  --bg: #0a0f1f;
+  --card: #121a30;
+  --inset: #0c1226;
+  --line: #243050;
+  --ink: #e8edf8;
+  --muted: #8c99b8;
+  --accent: #6d8dff;
+  --accent-2: #a78bfa;
+  --danger: #ff7a8a;
+  --radius: 18px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 32px 20px 56px; min-height: 100vh; color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background:
+    radial-gradient(900px 500px at 12% -10%, #1b2a5c 0%, transparent 60%),
+    radial-gradient(700px 400px at 100% 0%, #2d1d6455 0%, transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+}
+main { max-width: 1080px; margin: 0 auto; }
+a { color: var(--accent); }
+
+/* header */
+header { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
+h1 { margin: 0 0 6px; font-size: 1.9rem; letter-spacing: -.02em; }
+.sub { margin: 0; color: var(--muted); }
+.nav-link {
+  padding: 9px 16px; border: 1px solid var(--line); border-radius: 999px; background: var(--card);
+  color: var(--ink); text-decoration: none; font-weight: 600; font-size: .92rem; transition: border-color .15s, background .15s;
+}
+.nav-link:hover { border-color: var(--accent); background: #17213d; }
+
+/* cards */
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; box-shadow: 0 12px 32px rgba(0, 0, 0, .28); }
+.label { margin: 0 0 10px; color: var(--muted); font-size: .78rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
+
+/* buttons */
+button {
+  flex: 1; padding: 13px 14px; font: inherit; font-weight: 700; color: var(--ink); cursor: pointer;
+  background: transparent; border: 1px solid var(--line); border-radius: 12px; transition: background .15s, filter .15s;
+}
+button:hover { background: #1a2442; }
+button.primary { border-color: transparent; color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 8px 20px rgba(109, 141, 255, .3); }
+button.primary:hover { filter: brightness(1.1); background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+button:focus-visible, .seg input:focus-visible + label, .nav-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- digit recognizer page ---------- */
+.layout { display: grid; grid-template-columns: minmax(0, 460px) minmax(0, 1fr); gap: 24px; align-items: stretch; }
+@media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+
+.canvas-wrap { position: relative; }
+canvas { display: block; width: 100%; aspect-ratio: 1; background: #000; border: 1px solid var(--line); border-radius: 14px; cursor: crosshair; touch-action: none; }
+.canvas-hint { position: absolute; inset: 0; display: grid; place-items: center; color: #3a4666; font-size: 1.15rem; pointer-events: none; transition: opacity .15s; }
+.canvas-hint.hidden { opacity: 0; }
+.row { display: flex; gap: 12px; margin-top: 16px; }
+.hint { margin: 14px 0 0; color: var(--muted); font-size: .88rem; }
+
+/* model picker */
+.seg { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 22px; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; cursor: pointer; background: var(--inset); border: 1px solid var(--line); border-radius: 12px; transition: border-color .15s, background .15s; }
+.seg label:hover { border-color: #3a4a78; }
+.seg .name { font-weight: 700; }
+.seg .kind { color: var(--muted); font-size: .76rem; }
+.seg input:checked + label { border-color: var(--accent); background: rgba(109, 141, 255, .13); box-shadow: 0 0 0 1px var(--accent) inset; }
+
+/* result */
+.result { display: flex; flex-direction: column; }
+.summary { display: flex; align-items: center; gap: 22px; margin-bottom: 18px; }
+.digit-box { flex: none; display: grid; place-items: center; width: 132px; height: 132px; background: var(--inset); border: 1px solid var(--line); border-radius: 22px; }
+.digit { font-size: 5.6rem; line-height: 1; font-weight: 800; color: var(--accent); text-shadow: 0 0 30px rgba(109, 141, 255, .6); }
+.digit.placeholder { color: #2c3858; text-shadow: none; }
+.conf { font-size: 2.1rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.conf.placeholder { color: #2c3858; }
+.used { margin-top: 6px; color: var(--muted); }
+.error { min-height: 1.4em; margin-bottom: 8px; color: var(--danger); font-weight: 600; }
+
+.bar { display: grid; grid-template-columns: 20px 1fr 56px; gap: 10px; align-items: center; margin: 7px 0; color: var(--muted); font-size: .9rem; }
+.bar .track { height: 10px; overflow: hidden; background: var(--inset); border-radius: 999px; }
+.bar .fill { width: 0; height: 100%; background: #34426d; border-radius: 999px; transition: width .35s ease; }
+.bar .pct { text-align: right; font-variant-numeric: tabular-nums; }
+.bar.top { color: var(--ink); font-weight: 700; }
+.bar.top .fill { background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+
+/* ---------- comparison page ---------- */
+.section-title { margin: 34px 0 6px; font-size: 1.15rem; }
+.section-note { margin: 0 0 14px; color: var(--muted); font-size: .9rem; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { padding: 12px 14px; text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+thead th { color: var(--muted); font-size: .76rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; border-bottom: 1px solid var(--line); }
+tbody tr + tr td { border-top: 1px solid var(--line); }
+tbody td:first-child { font-weight: 800; }
+td.best { color: var(--accent); font-weight: 800; background: rgba(109, 141, 255, .1); }
+.table-note { margin: 14px 0 0; color: var(--muted); font-size: .82rem; }
+
+.chart-card { margin-bottom: 20px; }
+.chart-card h3 { margin: 0 0 12px; font-size: 1rem; }
+.chart-card a { display: block; padding: 10px; background: #fff; border-radius: 12px; }
+.chart-card img { display: block; width: 100%; height: auto; }
