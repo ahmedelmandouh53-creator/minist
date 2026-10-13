@@ -1,7 +1,7 @@
 {
   "test_acc": 0.9851,
   "train_acc": 0.9999,
-  "train_time": 175.23874497413635,
+  "train_time": 95.02748012542725,
   "parameters": 9763152,
   "settings": {
     "C": 5,

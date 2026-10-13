@@ -1,6 +1,4 @@
-# Tested with Python 3.11 on Windows 11, NVIDIA RTX 5050 (CUDA 13 driver)
-# PyTorch (GPU build used for training; the app runs fine on CPU): pip install torch==2.14.1 torchvision --index-url https://download.pytorch.org/whl/cu130
-# CPU-only alternative: replace cu130 by cpu in the index URL above
+# Python 3.11 or newer (tested on 3.11 and 3.14). Everything runs on the CPU, no GPU needed.
 torch==2.14.1
 torchvision==0.29.1
 numpy==2.4.6
